@@ -1,8 +1,8 @@
 /*
 To compile on Mac:
-    g++ -Wall -Wconversion -Wextra buildDictionaryForWines.cpp -o buildDictionaryForWines
+    g++ -Wall -Wconversion -Wextra buildDictionaryForBook.cpp -o buildDictionaryForBook
 To run on Mac:
-    ./buildDictionaryForWines
+    ./buildDictionaryForBook
 */
 
 #include <fstream>
@@ -12,8 +12,6 @@ To run on Mac:
 #include <sstream>
 #include <unordered_map>
 
-// defint the maximum number of lines to parse
-#define maxToParse 1000000000 // 1000000000
 // define the maximum number of words to output
 #define maxToOutput 10000
 
@@ -28,8 +26,8 @@ int main() {
 
   std::ifstream file;
   std::ofstream outFile;
-  outFile.open("../frequenciesWines.txt");
-  file.open("../wine.csv");
+  outFile.open("../frequenciesBook.txt");
+  file.open("../book.txt");
   if (!file) {
         std::cout << "Unable to open file";
         exit(1); // terminate with error
@@ -42,24 +40,9 @@ int main() {
           ++num;
           continue;
         }
-        // Process str
-        std::string description;
 
-        char* ch1 = std::strtok (&line[0u], "\"");
-        int counter = 0;
-        while (ch1 != NULL) {
-          if (counter == 1) {
-            description = ("%s\n",ch1);
-            //printf ("%s\n",ch1);
-            break;
-          }
-          ch1 = strtok (NULL, "\"");
-          ++counter;
-        }
 
-        //std::cout << description << std::endl;
-
-        std::istringstream iss(description);
+        std::istringstream iss(line);
         for(std::string s; iss >> s; ) {
           // lower case
           std::transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -77,10 +60,7 @@ int main() {
           }
 
         }
-
-
         ++num;
-        if (num == maxToParse) { break; }
     }
 
 

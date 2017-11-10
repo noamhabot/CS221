@@ -1,0 +1,5 @@
+tasty:1000
+aroma:980
+oaky:800
+silky:760
+smooth:500
