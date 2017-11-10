@@ -1,0 +1,15 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1504\cocoasubrtf830
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+{\info
+{\author Noam Habot}}\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 We receive the wine dataset from Kaggle, so while it is clean, we will need to do some pre-processing on this dataset before we can actually use it in our model. The dataset has various details about different wines, including prices, ratings, types, vineyards, origin, country, region, and detailed descriptions. First off, we will need to extract the most important keywords from all of the wine descriptions and build a "dictionary" of important key terms that describe wines. One way we thought of doing this is by getting the top 200 most frequently used words amongst all of the descriptions, and then hand-picking the top 30 that we think are the most important for describing wines. Let's call the number we have in this "dictionary" - "m".\
+\
+After this, we were thinking of building a separate model for each of these keywords in our "dictionary." For each of these keyword models, we will train them on all of the rows in the original dataset, with the response variable being a 1 if the current keyword is in the description and 0 otherwise. After this step, we will have trained "m" models, one for each keyword.\
+\
+Then, for prediction purposes, we will run all of the "m" models on a new wine to see how likely a keyword of a given model will appear in its description, and can decide whether or not to "describe" this new wine given the current keyword. After this, we can aggregate all of the predicted "1's", resulting in a list of keywords that describe the wine.\
+\
+As an extension to this project, we wish to extend this entire algorithm to "plug and play" into another dataset, such as coffee attributes and descriptions of beer attributes and descriptions. These datasets may need additional cleaning in order to get them to the point where we can use the algorithm developed on the wine one to predict keywords for the descriptions of those as well. A more sophisticated potential path that we may attempt is to generate keywords for songs, given data about the song itself (beats per minute, etc.). }
