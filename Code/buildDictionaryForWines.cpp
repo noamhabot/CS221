@@ -1,3 +1,10 @@
+/*
+To compile on Mac:
+    g++ -Wall -Wconversion -Wextra buildDictionaryForWines.cpp -o buildDictionaryForWines
+To run on Mac:
+    ./buildDictionaryForWines
+*/
+
 #include <fstream>
 #include <iostream>
 #include <string>
