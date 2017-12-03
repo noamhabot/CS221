@@ -4,7 +4,7 @@ library(caTools)
 ## Read in the big data set however necessary. 
 #data = data.table(read.csv("~/Downloads/dataset.csv"), sep = ',', header = FALSE, fill = TRUE)
 #saveRDS(data, "~/Documents/cs221/CS221FinalProject/data.rds")
-#data = readRDS("~/Documents/cs221/CS221FinalProject/data.rds")
+data = readRDS("~/Google Drive/Stanford/Stanford Y2 Q1/CS 221/CS221FinalProject/data.rds")
 data_ = subset(data, select=c(2,4,5,6,7,8,9,10,11,12:36))
 colnames(data_)
 
@@ -34,20 +34,41 @@ data_s = data_s[country %in% countries & province %in% provinces & region_1 %in%
 # train = data[sample, ]
 # test  = data[-sample, ]
 
+set.seed(1)
 split = sample.split(data_s$flavors, SplitRatio = 0.8)
 train = subset(data_s, split == TRUE)
 test = subset(data_s, split == FALSE)
 
-range = 7:31
+range = 7:8
 error = rep(0, length(range))
-for (i in range) {
+iterative <- function(i) {
+  print(i)
   thisVariable <- names(train)[i]
-  model = glm (train[, get(thisVariable)] ~ points+price+country+province+region_1+variety, data = train, family = binomial)
-  err = 1 - sum((predict(model, newdata = test, type = "response") > 0.5) == (test[, get(thisVariable)] > 0.5))/nrow(test)
-  error[i-6] = err
-  print(i-6)
-  print(thisVariable)
+  model = glm (as.matrix(train[, get(thisVariable)]) ~ points+price+country+province+region_1+variety, data = train, family = binomial(logit))
+  prediction = predict(model, newdata = test, type = "response")
+  err = 1 - sum((prediction > 0.5) == (test[, get(thisVariable)] > 0.5))/nrow(test)
+  #error[i-6] = err
+  #print(i-6)
+  #print(thisVariable)
+  return(list(thisVariable,err, prediction))
 }
+
+
+library(doMC)
+registerDoMC()
+options(cores=6)
+r <- foreach(i=7:8, .combine=list) %dopar% {
+  thisVariable <- names(train)[i]
+  model = glm (as.matrix(train[, get(thisVariable)]) ~ points+price+country+province+region_1+variety, data = train, family = binomial(logit))
+  prediction = predict(model, newdata = test, type = "response")
+  #err = 1 - sum((prediction > 0.5) == (test[, get(thisVariable)] > 0.5))/nrow(test)
+  l = list(prediction)
+  names(l)[1] = thisVariable
+  l
+}
+
+
+lapply(range, iterative)
 
 preliminary_error = data.frame(names(train)[range], error)
 write.csv(preliminary_error, "~/Documents/cs221/CS221FinalProject/preliminary_error.csv")
