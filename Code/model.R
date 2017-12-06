@@ -1,3 +1,5 @@
+rm(list = ls())
+
 library(data.table)
 library(caTools)
 
@@ -42,6 +44,69 @@ test = subset(data_s, split == FALSE)
 
 
 
+
+###### METRICS ########
+#######################
+totalPredictions <- readRDS("~/Google Drive/Stanford/Stanford Y2 Q1/CS 221/CS221FinalProject/Predictions/predictions_totalfirst1000.rds")
+prediction = totalPredictions
+n = 100#nrow(prediction)
+m = ncol(prediction)
+startIndex <- 7 # by default, this is 7
+recall = rep(0, n)
+precision = rep(0, n)
+for (i in 1:n) {
+  print(paste("Iteration:", i, "out of", n))
+  
+  # metric 1
+  in_review = 0
+  in_prediction = 0
+  thisObsKeywords = test[i, startIndex:(m+startIndex-1)]
+  predictions <- round(prediction[i, 1:m]+0.2)
+  
+  in_review = sum(thisObsKeywords)
+  in_prediction = sum(bitwAnd(as.numeric(thisObsKeywords), as.numeric(predictions)))
+  
+  recall[i] = in_prediction / in_review
+  
+  # metric 2
+  in_prediction = 0
+  not_in_review = 0
+  
+  in_prediction = sum(predictions)
+  not_in_review = as.numeric(table(as.numeric(predictions)-as.numeric(thisObsKeywords))["1"])
+  
+  precision[i] = 1-(not_in_review / in_prediction)
+}
+recall[is.nan(m1)]=NA
+precision[is.nan(m2)]=NA #### WAS WAS WAS m2_test[is.nan(m1)]=NA
+
+recallScore = mean(recall, na.rm = TRUE)
+precisionScore = mean(precision, na.rm=TRUE)
+
+Fscore = (2*precision*recall)/(precision+recall)
+
+print(paste("Mean of recall:", recallScore))
+print(paste("Mean of precision:", precisionScore))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### RUNNING KEYWORDS
+
+
 #range = 108:357
 #range = 358:507
 #range = 508:1007
@@ -54,6 +119,12 @@ for (i in range) {
   prediction[, thisVariable] = predict(model, newdata = test, type = "response")
 }
 #saveRDS(prediction, "~/Google Drive/Stanford/Stanford Y2 Q1/CS 221/CS221FinalProject/predictions_108_357.rds")
+
+
+
+
+
+
 
 
 
@@ -100,73 +171,8 @@ saveRDS(pred5081007, "~/Google Drive/Stanford/Stanford Y2 Q1/CS 221/CS221FinalPr
 
 
 
-###### METRICS ########
-#######################
-prediction = totalPredictions
-n = nrow(prediction)
-m = ncol(prediction)
-startIndex <- 7 # by default, this is 7
-m1 = rep(0, n)
-m1_test = rep(0, n)
-m2 = rep(0, n)
-m2_test = rep(0, n)
-for (i in 1:n) {
-  print(paste("Iteration:", i, "out of", n))
-  
-  # metric 1
-  in_review = 0
-  in_prediction = 0
-  thisObsKeywords = test[i, startIndex:(m+startIndex-1)]
-  predictions <- round(prediction[i, 1:m]+0.25)
-  
-  in_review = sum(thisObsKeywords)
-  in_prediction = sum(bitwAnd(as.numeric(thisObsKeywords), as.numeric(predictions)))
-  
-  m1_test[i] = in_prediction / in_review
-  
-  # metric 2
-  in_prediction = 0
-  not_in_review = 0
-  
-  in_prediction = sum(predictions)
-  not_in_review = as.numeric(table(as.numeric(predictions)-as.numeric(thisObsKeywords))["1"])
-  
-  m2_test[i] = not_in_review / in_prediction
-}
-m1_test[is.nan(m1)]=NA
-mean(m1_test, na.rm = TRUE)
-
-m2_test[is.nan(m2)]=NA #### WAS WAS WAS m2_test[is.nan(m1)]=NA
-mean(m2_test, na.rm = TRUE)
 
 
 
 
 
-
-
-
-
-for (i in range) {
-  cat("Prediciton error for \"",  names(train)[i],"\" on the test dataset is ", round(error[i],2), "\n", sep ="")
-}
-
-# Test Error 
-1 - sum((predict(model, newdata = test, type = "response") > 0.5) == (test$flavors > 0.5))/nrow(test)
-
-# Exploratory analysis
-
-# logistic regression model
-# model <- glm (flavors ~ country+designation+points+price, data = train, family = binomial)
-# summary(model)
-
-if (FALSE) {
-  # Cardinality of categorical feature variables is too high
-  head(data_[, .(cnt = .N), .(country)][order(-cnt)], 50) # top 15
-  head(data_[, .(cnt = .N), .(designation)][order(-cnt)], 50) # 1/3 blank... delete
-  sum(head(data_[, .(cnt = .N), .(province)][order(-cnt)], 50)$cnt) # 50
-  sum(head(data_[, .(cnt = .N), .(region_1)][order(-cnt)], 50)$cnt) # maybe
-  head(data_[, .(cnt = .N), .(region_2)][order(-cnt)], 50) # 2/3 blank 
-  View(data.frame(data_[, .(cnt = .N), .(variety)][order(-cnt)])) # go to top 200
-  View(data.frame(data_[, .(cnt = .N), .(winery)][order(-cnt)])) # 1500
-}
