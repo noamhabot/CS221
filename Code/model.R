@@ -75,6 +75,7 @@ r <- foreach(i=508:1007, .combine=list) %dopar% {
 #saveRDS(r, "~/Google Drive/Stanford/Stanford Y2 Q1/CS 221/CS221FinalProject/predictions_2.rds")
 r = readRDS("~/Google Drive/Stanford/Stanford Y2 Q1/CS 221/CS221FinalProject/predictions_508_1007.rds")
 
+
 # convert "r" to the nice format of the data
 newDF <- data.frame(rep(1,nrow(test)))
 # first one
@@ -101,14 +102,18 @@ saveRDS(pred5081007, "~/Google Drive/Stanford/Stanford Y2 Q1/CS 221/CS221FinalPr
 
 ###### METRICS ########
 #######################
-
+prediction = totalPredictions
 n = nrow(prediction)
 m = ncol(prediction)
-startIndex <- 508
+startIndex <- 7 # by default, this is 7
 m1 = rep(0, n)
 m1_test = rep(0, n)
-for (i in 1:100) {
-  print(i)
+m2 = rep(0, n)
+m2_test = rep(0, n)
+for (i in 1:n) {
+  print(paste("Iteration:", i, "out of", n))
+  
+  # metric 1
   in_review = 0
   in_prediction = 0
   thisObsKeywords = test[i, startIndex:(m+startIndex-1)]
@@ -118,27 +123,20 @@ for (i in 1:100) {
   in_prediction = sum(bitwAnd(as.numeric(thisObsKeywords), as.numeric(predictions)))
   
   m1_test[i] = in_prediction / in_review
-}
-m1_test[is.nan(m1)]=NA
-mean(m1_test, na.rm = TRUE)
-
-# Metric 2
-m2 = rep(0, n)
-m2_test = rep(0, n)
-for (i in 1:n) {
+  
+  # metric 2
   in_prediction = 0
   not_in_review = 0
   
-  
-  predictions <- round(prediction[i, 1:m]+0.25)
   in_prediction = sum(predictions)
-  
-  thisObsKeywords = test[i, startIndex:(m+startIndex-1)]
   not_in_review = as.numeric(table(as.numeric(predictions)-as.numeric(thisObsKeywords))["1"])
   
   m2_test[i] = not_in_review / in_prediction
 }
-m2_test[is.nan(m1)]=NA
+m1_test[is.nan(m1)]=NA
+mean(m1_test, na.rm = TRUE)
+
+m2_test[is.nan(m2)]=NA #### WAS WAS WAS m2_test[is.nan(m1)]=NA
 mean(m2_test, na.rm = TRUE)
 
 
