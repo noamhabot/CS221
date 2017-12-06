@@ -42,8 +42,25 @@ train = subset(data_s, split == TRUE)
 test = subset(data_s, split == FALSE)
 
 
-
-
+###### METRICS NEW ########
+###########################
+n = 100#nrow(prediction)
+m = ncol(prediction)
+startIndex <- 7 # by default, this is 7
+recall = rep(0, n)
+precision = rep(0, n)
+for (i in 1:n) {
+  added_probability = 0.2
+  thisObsKeywords = test[i, startIndex:(m+startIndex-1)]
+  predictions <- round(prediction[i, 1:m]+added_probability)
+  acc = table(Predictions = as.numeric(predictions), TrueLabels = as.numeric(thisObsKeywords))
+  TN = acc[1]
+  FP = acc[2]
+  FN = acc[3]
+  TP = acc[4]
+  precision[i] = TP / (TP + FP)
+  recall[i] = TP / (TP + FN)
+}
 
 ###### METRICS ########
 #######################
@@ -83,7 +100,7 @@ precision[is.nan(m2)]=NA #### WAS WAS WAS m2_test[is.nan(m1)]=NA
 recallScore = mean(recall, na.rm = TRUE)
 precisionScore = mean(precision, na.rm=TRUE)
 
-Fscore = (2*precision*recall)/(precision+recall)
+Fscore = (2*precisionScore*recallScore)/(precisionScore+recallScore)
 
 print(paste("Mean of recall:", recallScore))
 print(paste("Mean of precision:", precisionScore))
