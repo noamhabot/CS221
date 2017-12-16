@@ -1,141 +1,148 @@
-
-
-\documentclass[conference]{IEEEtran}
-\ifCLASSINFOpdf
-\else
-\fi
-
-
-
-
-% *** MATH PACKAGES ***
-%
-\usepackage{textcomp}
-\usepackage{graphicx}
-\usepackage[caption=false,font=footnotesize]{subfig}
-\usepackage[margin=1in]{geometry}
-\usepackage{amsmath,amsthm,amssymb,amsfonts}
+\documentclass{article} % For LaTeX2e
+\usepackage{style-file,times}
 \usepackage{hyperref}
-\usepackage{epsf,graphicx,psfrag,makeidx}
-\usepackage{bbm}
-\hyphenation{op-tical net-works semi-conduc-tor}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[overload]{empheq}
+\usepackage[numbib,notlof,notlot,nottoc]{tocbibind}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{subcaption}
+\usepackage[margin=1in]{geometry}
 
-
-
-\begin{document}
-%
-% paper title
-% Titles are generally capitalized except for words such as a, an, and, as,
-% at, but, by, for, in, nor, of, on, or, the, to and up, which are usually
-% not capitalized unless they are the first or last word of the title.
-% Linebreaks \\ can be used within to get better formatting as desired.
-% Do not put math or special symbols in the title.
 \title{Wine Review Keyword Prediction}
 
-
-
-% author names and affiliations
-% use a multiple column layout for up to three different
-% affiliations
-\author{\IEEEauthorblockN{Noam Habot}
-\IEEEauthorblockA{ICME\\
-Stanford University\\
-nhabot@stanford.edu}
-\and
-\IEEEauthorblockN{Mackenzie Pearson}
-\IEEEauthorblockA{ICME\\
-Stanford University\\
-pearson3@stanford.edu}
-\and
-\IEEEauthorblockN{Shalini Ranmuthu}
-\IEEEauthorblockA{Department of Electrical Engineering\\
-Stanford University\\
-shalinir@stanford.edu}
+\author{
+Noam Habot \\
+\texttt{\footnotesize nhabot@stanford.edu} \\
+\And
+Mackenzie Pearson \\
+\texttt{\footnotesize pearson3@stanford.edu} \\
+\And
+Shalini Ranmuthu \\
+\texttt{\footnotesize shalinir@stanford.edu} \\
 }
 
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
 
+\nipsfinalcopy % Uncomment for camera-ready version
 
+\begin{document}
 
 \maketitle
 
 \begin{abstract}
-PUT OUR ABSTRACT HERE
+Utilizing the Wine Reviews data set found on Kaggle$^{(4)}$ of around 130,000 wine reviews with variety, location, winery, price, and description, we propose a methodology to predict keywords within these reviews. We determine relevant keywords in reviews by first extracting wine related keywords from all the reviews. Further, we construct a model to predict whether or not a keyword would be found in a review, given attributes about a particular wine being reviewed. 
 \end{abstract}
 
+%%%%%%%% Problem Definition and Motivation Section %%%%%%%%%%%%%%%%%
 \section{Problem Definition and Motivation}
-The primary goal of our project is to be able to take information about various wines such as the region, price, variety, and more, and to be able to predict keywords about the wine without looking at the wine's description or review.
+The primary goal of our project is to be able to take attributes of various wines (such as the region, price, variety, and more) and use this information to predict keywords about the wine without looking at the wine's description or review - phrases like oaky, citrus, tannins, etc. The motivation behind this project is to explore what correlations exist between wine attributes and the keywords found in reviews. A good model for this problem could then hopefully be used in place of expert reviews in order to take wine attributes that might not mean much to the average user and instead generate more meaningful keywords about the taste of the wine. Further, we hope that by performing this analysis, we will find not only a model that can predict wine reviews, but also a model that could be extended to other text-based analyses, including but not limited to beer or coffee reviews.
 
-%INCLUDE MOTIVATION STUFF HERE
-%poster says: To explore correlations between wine attributes and keywords found in reviews. Should also talk about what users would want and/or potential to replace sommeliers / wine experts
+%%%%%%%%%%%%%%%%%% Lit Review Section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Literature Review (edit/move this)}
+\section{Literature Review}
 %include article summaries here
 
 %make sure to edit so that it relates to our final approach/results
 
 %Have there been other attempts to build such a system? Compare and contrast your approach with existing work, citing the relevant papers. The comparison should be more than just high-level descriptions. You should try to fit your work and other work into the same framework. Are the two approaches complementary, orthogonal, or contradictory?
 
-We found some related works that provide interesting insight into different parts of our project. Sarkar discusses his hybrid technique of keyphrase extraction while Hulth et al. describes his automated keyword extraction using domain knowledge.\\
-In Sarkar's paper$^{(2)}$, a hybrid approach to keyphrase extraction is presented from medical documents. Sarkar combines the first approach of assigning weights to candidate keyphrases based on an effective combination of features such as position, term frequency (TF), inverse document frequency (IDF) with the second approach of assigning weights to candidate keyphrases using some knowledge about their similarities to the structure and characteristics of keyphrases available in the stored list of keyphrases. He concludes by showing that the experimental results prove that this hybrid approach performs better than other singular keyphrase extraction approaches.\\
-In Hulth's paper$^{(1)}$, they first extract keywords using frequency analysis. Then, they construct a hierarchical domain-specific thesaurus as a second knowledge source. They extract the best keywords by ranking the measures of matching the previously assigned keywords.
+In this section we summarize three papers that delve into the problem of keyword extraction and prediction. These papers cover a broad range of topics such as a hybrid method for extracting medical keyphrase data, a frequency analysis for extracting keywords in documents using a hierarchical thesaurus, and  a third method that scores and orders the discovered keywords using various methods and then evaluates using recall and precision.
 
-\section{Model}
-We will be developing our analysis based on an online dataset from Kaggle that contains wine reviews scraped from the WineEnthusiast website. The image below shows an example from this dataset that used as a training input. There is a field for the detailed description itself, as well as other fields for related information.
+\subsection{A Hybrid Approach to Extract Keyphrases from Medical
+Documents}
+
+In Sarkar's paper$^{(2)}$, a hybrid approach to keyphrase extraction is presented from medical documents. Sarkar combines the first approach of assigning weights to candidate keyphrases based on an effective combination of features such as position, term frequency (TF), inverse document frequency (IDF) with the second approach of assigning weights to candidate keyphrases using some knowledge about their similarities to the structure and characteristics of keyphrases available in the stored list of keyphrases. He concludes by showing that the experimental results prove that this hybrid approach performs better than other singular keyphrase extraction approaches. However, the approaches from this specific paper are a bit different than ours since this paper focuses more on keyphrase extraction using n-gram models of length $L$, whereas this project is mainly geared towards keyword extraction. This implies that $L=1$ throughout, thus reducing candidate keywords but also making the problem scope more feasible for large scale modeling.
+
+\subsection{Automatic Keyword Extraction Using
+Domain Knowledge}
+
+Hulth's paper$^{(1)}$ explores a methodology to extract keywords in a more intelligent manner than the typical frequency analysis. While they start off with frequency analysis, they then construct a hierarchical domain-specific thesaurus as a second knowledge source. The best keywords are extracted by ranking the measures of matching the previously assigned keywords. This approach, by including the thesaurus as a list of features, improved the recall metric by nearly 30\%, from 65\% to 95\%. It is a very worthwhile approach and has garnered satisfactory results, beating professional human indexers by a significant amount in terms of time and efficiency. While this approach may have helped our analysis, we could not implement a hierarchical English thesaurus in time, and our experiments showed that our approach outlined in Section 3.2 outputted satisfactory results for the purposes of this project.
+
+\subsection{Automatic Keyword Extraction from Individual Documents}
+The paper written by Rose, Engel, Cramer, and Cowley$^{(3)}$ defines a novel strategy to extract keywords and they also propose metrics for characterizing the exclusivity, essentiality, and generality of extracted keywords within a corpus. The approach in this paper is titled Rapid Automatic Keyword Extraction (RAKE), and essentially generates unique keywords from space delimiters (keyphrases of length 1) as well as from stop words (keyphrases of varying length). Afterwards, the keywords are scored using either word frequency, word degree, or ratio of degree to frequency and are then directed through further evaluation. They also use recall and precision as metrics for the evaluation. While this approach is good for non-domain-specific keyword extraction, it would not do well in this particular approach because it would not necessarily assign higher scores to keywords relating to wines. To overcome this, we envisioned our own simple solution that would only incorporate word frequencies but would then remove the non-wine-related keywords in Section 3.2 below.
+
+%%%%%%%%%%%%%% Infrastructure and Pre-Processing Section %%%%%%%%%%%%%%%%%%
+
+\section{Infrastructure and Pre-Processing}
+In this section we describe the wine review Kaggle data set we worked with, the resulting dictionary of keywords we built from it and the final data set we constructed to run our model on. 
+
+\subsection{The Data Set}
+
+We will be developing our analysis based on an online dataset from Kaggle that contains wine reviews scraped from the WineEnthusiast website. The image below shows an example from this dataset that was used as a training input. There is a field for the detailed wine review by an expert sommelier itself, as well as other fields for related information.
 \begin{center}
 \includegraphics[width=1.0\textwidth]{input.JPG}
 \end{center}
 
-While the Kaggle dataset has already been cleaned, we will need to do some pre-processing on this dataset before we can actually use it in our model.
+While the Kaggle dataset has already been cleaned, we will need to do some pre-processing on this dataset before we can actually use it in our model. 
 
-\subsection{Building Dictionary of Wine Keywords}
+\subsection{Data Processing: Building Dictionary of Wine Keywords}
 % Noam
-\indent First, we will need to extract the most important keywords from all of the wine reviews and build a set, i.e. ``dictionary,'' of relevant key terms that describe wines.
-%A sample of these words is ``aromatic,'' ``fruity,'' ``tannic,'' and ``smooth,'' to name a few.
+First, we will need to extract the most important keywords from all of the wine reviews and build a set, i.e. ``dictionary,'' of relevant key terms that describe wines. 
+%A sample of these words is ``aromatic,'' ``fruity,'' ``tannic,'' and ``smooth,'' to name a few. 
 To do this, we first concatenate all of the wine reviews into a wine description corpus.
 We then run a script that takes an input $k_1$ (the number of unique words that we want to be outputted), normalizes all the words in the corpus by converting them to all lower case and removing any punctuation, and then counts the frequencies of each unique word and stores them in a mapping.
 This dictionary is then sorted by decreasing frequencies, such that $freq_i > freq_{i+1}$, and written into a file named "wineWordFrequencies.txt", in the format: $word_i:freq_i$.
-\\
-\indent One particular issue that we ran into is the computational inefficiency of high level programming languages, such as $R$, when attempting to perform these calculations involving large-scale text (an average of 100 words/description for about 150,000 wines, resulting in around 15,000,000 words).
-To mitigate this issue, and to be able to run the script with quickly with a modified $k_1$, we wrote the script in $C++$ and its runtime is around 5 seconds.
-\\
-\indent This technique leaves us with the top $k_1$ frequented words from the wine descriptions, but the top 5 keywords we see in this list are ``and'', ``the'', ``a'', ``of'', and ``with''. The next step is to remove such words that are not satisfactory keywords for wine reviews. % - such as ``the,'' ``a,'' ``almost,'' ``among,'' etc.
-To do this, we run the same script on a text corpus from a book; we used "The Adventures of Sherlock Homes" by Sir Arthur Conan Doyle. We saved the dictionary including the words and corresponding frequencies in a file named "bookWordFrequencies.txt".
-The idea is that since the book contains a broader set of English language words that are not particular to a specific subject, we can use the top $k_2$ frequently used words and set-subtract them from the top $k_1$ words we found from the wine description keywords in order to prune out keywords that are not wine-specific.
-\\
-\indent Finally, we take the "wineWordFrequencies.txt" and remove the intersection between its words and the words in "bookWordFrequencies.txt" to generate the wine keywords that predominantly govern the final keywords that we will use to continue with our analysis. The top 5 keywords in the resulting list are ``flavors'', ``aroma'', ``acidity'', ``tannins'', and ``ripe''. Note that both $k_1$ and $k_2$ are hyperparameters that can be tuned as we continue the project and as we see fit. Currently we have $k_1 = k_2 = 10,000$ which results in $m = 6,342$ final keywords. %$\mathbbm{1}\{keyword_j \in review_i\}$
+
+One particular issue that we ran into is the computational inefficiency of high level programming languages, such as $R$, when attempting to perform these calculations involving large-scale text (an average of 100 words/description for about 150,000 wines, resulting in around 15,000,000 words). 
+To mitigate this issue, and to be able to run the script quickly and with modified values of $k_1$, we wrote the script in $C++$ and its runtime is around 5 seconds.
+
+This technique leaves us with the top $k_1$ frequented words from the wine descriptions, but the top 5 keywords that are in this list are ``and'', ``the'', ``a'', ``of'', and ``with''. The next step is to remove such words that are not satisfactory keywords for wine reviews, such as the ones listed. % - such as ``the,'' ``a,'' ``almost,'' ``among,'' etc.
+To do this, we run the same script on a text corpus from a book and obtain all of its unique words and frequency counts; we used "The Adventures of Sherlock Homes" by Sir Arthur Conan Doyle. We saved the dictionary including the words and corresponding frequencies in a file named ``bookWordFrequencies.txt''.
+The idea is that since the book contains a broader set of English language words that are not particular to a specific subject, we can use the top $k_2$ frequently used words and set-subtract them from the top $k_1$ words we found from the wine description words in order to prune out words that are not wine-specific and have the resulting set of words be the wine specific keywords.
+
+Finally, we take the ``wineWordFrequencies.txt'' and remove the intersection between its words and the words in ``bookWordFrequencies.txt'' to generate the wine keywords that predominantly govern the final keywords that we will use to continue with our analysis. The top 5 keywords in the resulting list are ``flavors'', ``aroma'', ``acidity'', ``tannins'', and ``ripe''. Note that both $k_1$ and $k_2$ are hyperparameters that were tuned as we saw fit throughout the continuation of the project. Throughout our different simulations with variations of these specific hyperparameters, we did not see any drastic differences between different values of $k_1$ and $k_2$. We stuck to something simple and logical - $k_1 = k_2 = 10,000$ which results in $m = 6,342$ final keywords. %$\mathbbm{1}\{keyword_j \in review_i\}$
 
 
-\subsection{Adding Wine Keyword Indicators to Dataset}
+\subsection{Data Processing: Adding Wine Keyword Indicators to Dataset}
+\label{sec:dp}
 %Shalini
-The file with the list of the final $m$ keywords can now be inputted into a Python script that will add keyword indicator features to every wine in the dataset. The objective is that each wine will have the all the features from the original dataset concatenated with $m$ new response variables (one per keyword). The script first reads in the original ``wines.csv'' dataset file and iterates over each row (containing the original features for an individual wine). For each wine, the value of the new response variable will be a 1 if the corresponding keyword is present in the wine description feature, and 0 if the keyword is not present. The new response variables are appended to the old feature values and then stored in a new ``dataset.csv'' file. \\
-\indent It is important to note that the searching for the keyword in the description should be case-insensitive and that superstrings of keywords are also detected as the presence of the keyword (since aroma and aromatic indicate similar properties of the wine). Since this process loops through all approximately 150,000 wines in the dataset and adds $m$ features, the script takes around 30 minutes to run, but has to be run only once in the pre-processing pipeline. However, speeding up this process and reducing the size of the resulting dataset would be valuable, and we discuss some ideas to address this in the \textit{Future Work} section.
+The file with the list of the final $m$ keywords could now be inputted into a Python script that will add keyword indicator features to every wine in the dataset. The objective is that each wine will have all the features from the original dataset concatenated with $m$ new response variables (one per keyword). The script first reads in the original ``wines.csv'' dataset file and iterates over each row (containing the original features for an individual wine). For each wine, the value of the new response variable will be a 1 if the corresponding keyword is present in the wine description feature, and 0 if the keyword is not present. The new response variables are appended to the old feature values and then stored in a new ``dataset.csv'' file. 
 
-\subsection{Logistic Regressions}
+It is important to note that the searching for the keyword in the description should be case-insensitive and that superstrings of keywords are also detected as the presence of the keyword (since aroma and aromatic indicate similar properties of the wine). Since this process loops through all approximately 150,000 wines in the dataset and adds $m$ features, the script takes around 30 minutes to run, but has to be run only once in the pre-processing pipeline. However, speeding up this process and reducing the size of the resulting dataset would be valuable, and we discuss some ideas to address this in the \textit{Future Work} section. 
+
+We also note that certain feature vectors (such as ``region\_2'') are quite sparse and therefore not useful for prediction. The final dataset passed through this algorithm will thus be a subset of the original data set with such features removed. Our algorithm will also be tested on a reserved subset of the Kaggle dataset (not used for training). During testing, the inputs will be in the same format as the training inputs with the wine review field removed, and the outputs will be a list of keywords for each input. 
+
+%%%%%%%%%%%%%%%%%% The Model Section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{The Model}
 %Mack
-Next, we will train a separate model for each of these $k$ keywords in our ``dictionary,'' where the response variable $y$ will be a binary feature indicating whether or not the keyword is in the wine's description, and where our predictor/feature variables are the rest of the information we have on each wine (country, points, price...).
-To do this, we will make the assumption that the log-odds of a response $y$ can be expressed as a linear function of our $k$ feature variables, i.e.
+As described in Section~\ref{sec:dp}, we work with a data set consisting of $m$ dependent variables, one for each keyword of interest and the wine attributes as predictor variables. 
+Rather than performing a multivariate multiple regression on this data set, we instead choose to construct a logistic regression model for each of the $m$ dependent variables. 
+We will then use these $m$ logistic regression models on a test data set to predict the probability of each keyword being in a wine's review, given attributes about that wine. 
+By constructing $m$ logistic regression models, we simplify the tuning of the overall model for each variable while also avoiding the issue of collinearity between the $m$ dependent variables.
+
+\subsection{Logistic Regression}
+
+For each model we will have a response variable $y$ which is a binary variable indicating whether or not the keyword is in the wine's description, and our predictor/feature variables are the rest of the information we have on each wine \footnote{The predictors used in the model include: points, price, country, province, region\_1, and variety.}.
+To do this, we will make the assumption that the log-odds of a response $y$ can be expressed as a linear function of the $k$ predictor variables, i.e. 
 \begin{align*}
 \log\Big(\frac{p}{1-p}\Big) = \beta_0 + \beta_1 x_1 + ... + \beta_k x_k
 \end{align*}
-where $p$ is the probability of the keyword being in the description.
+where $p$ is the probability of the keyword being in the description. 
 Here, we can interpret the value of $e^{\beta_j}$ as how the odds of the keyword being in the description increase or decrease for a one unit increase of $x_j$, holding all else equal.
-Rewriting the above, we find
+Rewriting the above, we find 
 $$
 \hat{p}(x) = \frac{1}{1+e^{-(\hat{\beta}_0 + \hat{\beta}_1 x_1 + ... + \hat{\beta}_k x_k)}}
 $$
-where maximum likelihood estimation is used to solve for the parameters that best fit the data. See the \textit{Algorithm} section for more details.
-
-\section{Algorithm}
+where maximum likelihood estimation is used to solve for the parameters that best fit the data. 
 
 % Talk about how logistic regression models are implemented in R  (stochastic gradient descent) and what parameters you set
 
 % make sure to describe the challenges of why we decided to remove the region column and makes amendments to the winery factors
 
+\subsection{Maximum Likelihood for Logistic Regression}
+
 To find the parameters for logistic regression we maximize the likelihood function:
 \begin{align*}
 L(\beta_0, \beta) = \prod_{i=1}^n p(x_i)^{y_i} (1-p(x_i))^{1-y_i}
 \end{align*}
-Now, taking logs and subsituting $p(x_i)$ into the above we find:
+Now, taking logs and substituting $p(x_i)$ into the above we find:
 \begin{align*}
 l(\beta_0, \beta) &= \sum_{i=1}^n -\log(1-p(x_i)) + y_i \log\Big(\frac{p(x_i)}{1-p(x_i)}\Big) \\
 &= \sum_{i=1}^n -\log(1+e^{\beta_0 + x_i \beta}) + y_i (\beta_0 + x_i \beta)
@@ -146,13 +153,17 @@ and differentiating with respect to all $\beta_j$ and equating to 0 we derive ou
 &= \sum_{i=1}^n (y_i - p(x_i))x_{ij} \\
 &= 0
 \end{align*}
-which can finally be solved numerically via Newton's Method.\\
+which can finally be solved numerically via Newton's Method.
 
-It is important to note that certain feature vectors (such as ``region\_2'') are quite sparse and therefore not useful for prediction. The final dataset passed through this algorithm will thus be a subset of the original data set with such features removed. Our algorithm will also be tested on a reserved subset of the Kaggle dataset (not used for training). During testing, the inputs will be in the same format as the training inputs with the wine review field removed, and the outputs will be a list of keywords for each input.
+%%%%%%%%%%%%%%%%%% Results Section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Results}
+
+To determine how our model performed we interpret a few different metrics. We first evaluate the test error for each logistic regression model, independent of all the other models. Next, we evaluate precision and recall metrics for the combination of the logistic regression models for a particular observation to determine how well our model performed overall. 
+
 \subsection{Preliminary Evaluation Metrics}
-After running the logistic regression on the training set for each of the first several keywords, it was straight forward to calculate the test error on that corresponding keyword and report it as the initial evaluation metric for those keyword's model. This preliminary evaluation metric was used in order to get an idea of how the first several keyword models were performing before continuing to generate more models and predictions for the rest of the keywords. The mean preliminary test error over the top 25 keywords is 11.94\%. Details for each of the top 16 keywords can be referenced in Table \ref{preliminary_error_table} in the Appendix.
+After running the logistic regression on the training set for each of the first several keywords, it was straight forward to calculate the test error on that corresponding keyword and report it as the initial evaluation metric for those keyword's model. This preliminary evaluation metric was used in order to get an idea of how the first several keyword models were performing before continuing to generate more models and predictions for the rest of the keywords. The mean preliminary test error over the top 16 %WAS 25 BUT IT'S WEIRD THAT WE ONLY WANT TO SHOW 16 and I don't want to run the code :/ %
+keywords is 11.94\%. Details for each of the top 16 (for brevity purposes) keywords can be referenced in Table \ref{preliminary_error_table} in the Appendix.
 
 A key takeaway from Table \ref{preliminary_error_table} is that the keyword ``flavors'' received a test error of 33.48\% which could be considered quite poor; however, is not surprising as the word ``flavors'' is not specific to a particular set of wines. This can be contrasted with, for example, the keyword ``citrus'', which obtained a test error of just 7.49\%!
 
@@ -188,25 +199,27 @@ $$
 Fscore = 2 \cdot \frac{precision*recall}{precision+recall}
 $$
 
-In order to obtain the highest $Fscore$ for our models, there were two hyperparameters that we decided to iterate through:
+In order to obtain the highest $Fscore$ for our models, there were two hyper-parameters that we decided to iterate through:
 \begin{enumerate}
 \item The probability cutoff to determine where the prediction should be converted to 1 and where it should be converted to 0.
-\item The range of keywords used in the predictions. Even though the models were generated from the top 1000 most common keywords, we hypothesized that utilizing different ranges of these top 1000 keywords could provide us with better results.
+\item The range of keywords used in the predictions. Even though the models were generated from the top 1000 most frequently prevalent keywords, we hypothesized that utilizing different ranges of these top 1000 keywords could provide us with better results.
 \end{enumerate}
 
-The first set of computational trials that we attempted involved incrementing the starting index of the range of keywords from 1 to 951, with a difference of 50 each time. This can be seen in Tables \ref{fig:fscores1} and \ref{fig:fscores2} in the Appendix. The columns of the tables represent the indices of the range of keywords used. It is very important to note that the keywords were sorted and indexed according to their frequency in all of the wine reviews. From this trial, we conclude that the highest $Fscore$ occurrs when the probability cutoff is $0.3$ and the range includes all of the keywords - from $[1,1000]$.
+The first set of computational trials that we attempted involved incrementing the starting index of the range of keywords from 1 to 951\footnote{Note: a keyword at index $j$ implies that it is the $j$th most common wine keyword in terms of frequency amongst all wine reviews}, with a difference of 50 each time. This can be seen in Tables \ref{fig:fscores1} and \ref{fig:fscores2} in the Appendix. The columns of the tables represent the indices of the range of keywords used. It is very important to note that the keywords were sorted and indexed according to their frequency in all of the wine reviews. From this trial, we conclude that the highest $Fscore$ occurrs when the probability cutoff is $0.3$ and the range includes all of the keywords - from $[1,1000]$.
 
 Next, we ran a very similar computational trial but instead of varying the starting index of the range, the end index of the range was incremented from 11 to 351. There, we saw that the highest $Fscore$ was when the range was the smallest, particularly from $[1,11]$, with the probability cutoff being $0.2$. This narrowly beat the probability cutoff of $0.3$ for the same range, which had an $Fscore$ of 0.0127 points lower.
 
 While the shorter range of $[1,11]$ produced the highest $Fscore$, it would not make sense to choose the corresponding set of keywords, i.e. $keyword_1,...,keyword_{11}$ as the best set of keywords for this result because then the wine review predictions would only contain a very limited set of words. Instead, something like the top 100 keywords, which led to an $Fscore=0.4382$ with probability cutoff $0.3$ would seem like a more reasonable selection for maintaining predictive power while also adding variation to the possibility of predicted keywords.
 
 \subsection{ROC Curves}
-EXPLAIN WHAT A ROC CURVE IS....
+A ROC curve is used to graphically show the diagnostic ability of a binary classifier as its added probability threshold is altered. It is a plot of the True Positive Rate (Recall) against the False Positive Rate. Each point has a corresponding $Fscore$ that can be computed from the formula above. The Area Under the Curve (AUC) in this type of graph can be interpreted as the total accuracy of the model, where 1 is the perfect model and 0.5 is a worthless model.
 
-Below is the ROC Curve for the top 100 keywords. We can see that the optimal probability cutoff is 0.3.
-\begin{figure}[h]
-\includegraphics[width=3in]{ROC1-100.jpeg}
+Figure \ref{fig:ROC} is the ROC Curve for the top 100 keywords. We can see that the optimal probability cutoff is 0.3, the point highlighted in red. This means that when the logistic regression for observation $i$ and for keyword $j$ outputs a probability that that keyword $j$ is in observation $i$'s wine review, the optimal decision is to take that probability, add this optimal probability cutoff (0.3), and round to the nearest integer. This produced the results (as can be seen) with the highest $Fscore$. The AUC in this particular plot is $0.7003093.$, which can be interpreted that this model is fairly useful in predicting wine keywords.
+\begin{figure}[H]
+\centering
+\includegraphics[width=4in]{ROC1-100.jpeg}
 \caption{The optimal probability cutoff calculated in this plot is 0.3.}
+\label{fig:ROC}
 \end{figure}
 
 
@@ -214,30 +227,38 @@ Below is the ROC Curve for the top 100 keywords. We can see that the optimal pro
 %For the construction of the dictionary our baseline will be created by extracting the top 50\% key words based on frequency and our oracle will be created by extracting the most frequent key words and removing known none descriptive words such as ``the'',  ``a", ``to'', ... To bridge this gap we plan on utilizing the external corpus (book) strategy described above.\\
 %For the construction of our prection model, our baseline will be created by assigning all keywords extracted to all observations and our oracle will be created by assigning keywords given the description of the wine. To bridge this gap we will utilize a validation data test with our train set, tuning parameters as needed.
 
+%%%%%%%%%%%%%%%%%% Error Analysis Section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Error Analysis}
 %include plots and shit from the poster
 
 
-\section{Future Work / Challenges / or something}
+%%%%%%%%%%%%%%%%%% Future Work / Challenges Section %%%%%%%%%%%%%%%%%%%%%
+
+\section{Challenges \& Future Work}
 %keep this or change this or delete it ??????
 
-\indent A problem that we are currently having with stages 2 and 3 of the model creation (adding wine keyword indicators to the dataset and logistic regressions, respectively)  is the sheer size of the dataset.
+One of the problems we encountered while doing this project was the computational efficiency of appending wine keyword indicators to the dataset, as well as building and predicting using the logistic regression models, mostly due to the sheer size of the dataset.
 After adding the wine indicators in stage 2, the dataset expands to include an additional $|observations|*|keywords| \approx 900,000,000$ binary values.
-These binary values will indicate if $keyword_j$ exists in $obs_i$. Since most of these end up being 0, perhaps we need to figure out a way of representing the columns as sparse vectors and incorporating this method into processing the algorithm to improve loading and computational times. We can speed up the creation of the dataset by optimizing the Python script in C++ instead.
+These binary values indicate if $keyword_j$ exists in $obs_i$. Since most of these end up being 0, we initially thought that sparse vector implementations would help improve loading and computational times for running predictions, saving predictions, and running metrics on them. However, since we used $R$, we quickly realized that the most efficient way of saving the entire dataset was to save it as an $.Rds$ file which automatically compresses the data into the best format to hasten saving and loading.\\
+
+As for the logistic regressions, first tried a different GLM package in $R$, called $speedGLM$, which is meant to build the logistic regression model as a parallel process and speed up its performance, but still loop through all of the models sequentially. We could not get $speedGLM$ to predict given the data that we had, so we decided to stick with the regular $GLM$ function in $R$. Driven by the desire to parallelize, we managed to parallelize the entire operation of building and predicting from the model to no avail - the ``parallelized'' for-loop took the same amount of time as the sequential for loop and also consumed 6 times more of our CPU's resources and RAM. We opted to run the models sequentially, and thus only generated models for the first 1,000 keywords instead of for all 6,000. This did not affect our algorithm's results because as seen in Section 5.2 and Tables 3-6, the best keyword ranges involved including only the keywords in the top 100, rather than to include beyond the 100th keyword.
+
+Multicollinearity and high cardinality proved to be an issue amongst some of the predictors, specifically with $region\_1$ and $region\_2$. Since a specific region corresponds to a subset of a country and/or region, the $region\_2$ had high multicollinearity with other features such as $region\_1$ and country. Thus, we decided to remove $region\_2$ from the model. Furthermore, some observations were removed if they contained features whose factors were not common enough throughout the rest of the dataset. For example, we did not include wines that were from Russia because there were not enough of them in the dataset, and including it would maintain high cardinality which would significantly hamper prediction power and results. We also kept only the top 100 most common wine varieties, the top 50 provinces, and the top 50 regions.
+
+For further analysis, it would be interesting to focus on extending this algorithm to beer or coffee connoisseur reviews and to try to predict their keywords as well. Another interesting hypothesis to test would be if neural networks would do a better job at identifying the underlying trends in the data, but the major down side to that would be the immense computational resources necessary as well as time to train the neural network model. With more time, those would be some of the further interesting experiments for this paper.
 \\
-\indent Additionally, we would like to delve deeper into the different factors that each feature variable has.
-For example, $region_1$ and $region_2$ have many missing values, and we might be better off if we don't include them as features in the model. Also, they will most likely have high multicollinearity with other features such as region and country, since they are subsets of each other, which is something we should be avoiding.
-\\
-\indent We can also separate out a validation subset in order to tune the hyperparameters mentioned in Section 1.1 (the $n$ and $m$ number of highest frequency words to extract).
-\\
-%\indent If time permits, as an extension to this project, we wish to extend this entire model to ``plug and play'' into another dataset, such as coffee or beer attributes and descriptions. These datasets may need additional cleaning in order to get them to the point where we can utilize the same model developed on the wine dataset to predict keywords for the coffee or beer, but it would be great.
+
 
 
 
 \section{References}
 \begin{enumerate}
-\item \href{https://people.dsv.su.se/~henke/papers/hulth01.pdf}{Hulth, Anette et al.: "Automatic Keyword Extraction Using Domain Knowledge"}
-\item \href{https://arxiv.org/pdf/1303.1441.pdf}{Sarkar, Kamal: "A Hybrid Approach to Extract Keyphrases from Medical Documents"}
+\item Hulth, A., Karlgren, J., Jonsson, A., Bostrom, H. and Asker, L. (2009). Automatic Keyword Extraction Using Domain Knowledge. [online] Department of Computer and Systems Sciences at Stockholm University. Available at: \href{https://people.dsv.su.se/~henke/papers/hulth01.pdf}{https://people.dsv.su.se/~henke/papers/hulth01.pdf}.
+\item Sarkar, K. (2013). A Hybrid Approach to Extract Keyphrases from Medical Documents. [online] Cornell University Library. Available at: \href{https://arxiv.org/pdf/1303.1441.pdf}{https://arxiv.org/pdf/1303.1441.pdf}.
+\item Rose, S., Engel, D., Cramer, N. and Cowley, W. (2010). Automatic keyword extraction from individual documents. [online] ResearchGate. Available at: \href{https://www.researchgate.net/publication/227988510_Automatic_Keyword_Extraction_from_Individual_Documents}{https://www.researchgate.net/publication/227988510\_Automatic\_Keyword\_Extraction\_from\_Individual\_Documents}.
+\item 
+"Wine Reviews | Kaggle." Kaggle.Com, 2017, \href{https://www.kaggle.com/zynicide/wine-reviews}{https://www.kaggle.com/zynicide/wine-reviews}.
 \end{enumerate}
 
 \newpage
@@ -260,37 +281,37 @@ For example, $region_1$ and $region_2$ have many missing values, and we might be
 \centering
 \caption{Fscores for various Keyword Ranges and Probability Values}
 \label{fig:fscores1}
-\begin{tabular}{rrrrrrrrrrrr}
-
- \multicolumn{12}{c}{\textbf{Keyword Range}}\\
+\begin{tabular}{rrrrrrrrrrr}
+ 
+ \multicolumn{11}{c}{\textbf{Keyword Range}}\\
   \hline
- \textbf{Prob} & \textbf{1-1001} & 51-1001 & 101-1001 & 151-1001 & 201-1001 & 251-1001 & 301-1001 & 351-1001 & 401-1001 & 451-1001 & 501-1001 \\
+ \textbf{Prob} & \textbf{1-1001} & 51-1001 & 101-1001 & 151-1001 & 201-1001 & 251-1001 & 301-1001 & 351-1001 & 401-1001 & 451-1001 \\ 
     \hline
--0.5 &  &  &  &  &  &  &  &  &  &  &  \\
-  -0.4 & 0.0101 & 0.0100 & 0.0088 & 0.0083 & 0.0080 & 0.0080 & 0.0081 & 0.0073 & 0.0068 & 0.0069 & 0.0070 \\
-  -0.3 & 0.0292 & 0.0216 & 0.0216 & 0.0222 & 0.0229 & 0.0234 & 0.0246 & 0.0242 & 0.0251 & 0.0263 & 0.0279 \\
-  -0.2 & 0.0945 & 0.0448 & 0.0473 & 0.0440 & 0.0441 & 0.0459 & 0.0490 & 0.0481 & 0.0513 & 0.0533 & 0.0560 \\
-  -0.1 & 0.1462 & 0.0818 & 0.0875 & 0.0858 & 0.0847 & 0.0803 & 0.0861 & 0.0866 & 0.0785 & 0.0812 & 0.0856 \\
-  0 & 0.2054 & 0.1229 & 0.1318 & 0.1295 & 0.1211 & 0.1123 & 0.1198 & 0.1193 & 0.0974 & 0.1003 & 0.1064 \\
-  0.1 & 0.2435 & 0.1424 & 0.1511 & 0.1507 & 0.1420 & 0.1322 & 0.1402 & 0.1414 & 0.1148 & 0.1173 & 0.1246 \\
-  0.2 & 0.2758 & 0.1685 & 0.1765 & 0.1768 & 0.1677 & 0.1559 & 0.1652 & 0.1684 & 0.1263 & 0.1289 & 0.1352 \\
-  \textbf{0.3} & \textbf{0.3025} & 0.1921 & 0.1939 & 0.1923 & 0.1814 & 0.1683 & 0.1786 & 0.1822 & 0.1357 & 0.1382 & 0.1431 \\
-  0.4 & 0.2979 & 0.2045 & 0.1964 & 0.1919 & 0.1802 & 0.1677 & 0.1763 & 0.1775 & 0.1340 & 0.1349 & 0.1399 \\
-  0.41 & 0.2951 & 0.2059 & 0.1975 & 0.1939 & 0.1838 & 0.1706 & 0.1801 & 0.1820 & 0.1388 & 0.1395 & 0.1435 \\
-  0.42 & 0.2869 & 0.2011 & 0.1952 & 0.1940 & 0.1827 & 0.1707 & 0.1807 & 0.1821 & 0.1407 & 0.1421 & 0.1438 \\
-  0.43 & 0.2774 & 0.1988 & 0.1933 & 0.1879 & 0.1775 & 0.1678 & 0.1786 & 0.1789 & 0.1390 & 0.1409 & 0.1425 \\
-  0.44 & 0.2635 & 0.1913 & 0.1874 & 0.1824 & 0.1729 & 0.1658 & 0.1756 & 0.1737 & 0.1371 & 0.1393 & 0.1418 \\
-  0.45 & 0.2458 & 0.1789 & 0.1762 & 0.1736 & 0.1667 & 0.1611 & 0.1707 & 0.1692 & 0.1341 & 0.1374 & 0.1401 \\
-  0.46 & 0.2283 & 0.1692 & 0.1655 & 0.1649 & 0.1580 & 0.1538 & 0.1621 & 0.1610 & 0.1297 & 0.1314 & 0.1335 \\
-  0.47 & 0.2053 & 0.1531 & 0.1487 & 0.1505 & 0.1452 & 0.1415 & 0.1497 & 0.1498 & 0.1238 & 0.1249 & 0.1260 \\
-  0.48 & 0.1724 & 0.1267 & 0.1242 & 0.1254 & 0.1220 & 0.1194 & 0.1252 & 0.1245 & 0.1047 & 0.1078 & 0.1085 \\
-  0.49 & 0.1277 & 0.0909 & 0.0876 & 0.0870 & 0.0850 & 0.0841 & 0.0883 & 0.0886 & 0.0763 & 0.0790 & 0.0785 \\
-  0.495 & 0.0993 & 0.0701 & 0.0662 & 0.0641 & 0.0619 & 0.0610 & 0.0633 & 0.0628 & 0.0542 & 0.0563 & 0.0570 \\
-  0.496 & 0.0929 & 0.0657 & 0.0619 & 0.0597 & 0.0574 & 0.0566 & 0.0587 & 0.0580 & 0.0505 & 0.0522 & 0.0534 \\
-  0.497 & 0.0860 & 0.0606 & 0.0566 & 0.0542 & 0.0520 & 0.0513 & 0.0531 & 0.0523 & 0.0456 & 0.0468 & 0.0479 \\
-  0.498 & 0.0790 & 0.0557 & 0.0517 & 0.0492 & 0.0470 & 0.0463 & 0.0477 & 0.0467 & 0.0409 & 0.0420 & 0.0430 \\
-  0.499 & 0.0716 & 0.0506 & 0.0468 & 0.0442 & 0.0420 & 0.0414 & 0.0424 & 0.0414 & 0.0361 & 0.0368 & 0.0375 \\
-  0.5 & 0.0275 & 0.0178 & 0.0154 & 0.0141 & 0.0129 & 0.0121 & 0.0119 & 0.0112 & 0.0092 & 0.0090 & 0.0090 \\
+-0.5 &   &  &  &  &  &  &  &  &  &  \\ 
+  -0.4 & 0.0101 & 0.0100 & 0.0088 & 0.0083 & 0.0080 & 0.0080 & 0.0081 & 0.0073 & 0.0068 & 0.0069  \\ 
+  -0.3 & 0.0292 & 0.0216 & 0.0216 & 0.0222 & 0.0229 & 0.0234 & 0.0246 & 0.0242 & 0.0251 & 0.0263  \\ 
+  -0.2 & 0.0945 & 0.0448 & 0.0473 & 0.0440 & 0.0441 & 0.0459 & 0.0490 & 0.0481 & 0.0513 & 0.0533  \\ 
+  -0.1 & 0.1462 & 0.0818 & 0.0875 & 0.0858 & 0.0847 & 0.0803 & 0.0861 & 0.0866 & 0.0785 & 0.0812  \\ 
+  0 & 0.2054 & 0.1229 & 0.1318 & 0.1295 & 0.1211 & 0.1123 & 0.1198 & 0.1193 & 0.0974 & 0.1003  \\ 
+  0.1 & 0.2435 & 0.1424 & 0.1511 & 0.1507 & 0.1420 & 0.1322 & 0.1402 & 0.1414 & 0.1148 & 0.1173  \\ 
+  0.2 & 0.2758 & 0.1685 & 0.1765 & 0.1768 & 0.1677 & 0.1559 & 0.1652 & 0.1684 & 0.1263 & 0.1289  \\ 
+  \textbf{0.3} & \textbf{0.3025} & 0.1921 & 0.1939 & 0.1923 & 0.1814 & 0.1683 & 0.1786 & 0.1822 & 0.1357 & 0.1382  \\ 
+  0.4 & 0.2979 & 0.2045 & 0.1964 & 0.1919 & 0.1802 & 0.1677 & 0.1763 & 0.1775 & 0.1340 & 0.1349  \\ 
+  0.41 & 0.2951 & 0.2059 & 0.1975 & 0.1939 & 0.1838 & 0.1706 & 0.1801 & 0.1820 & 0.1388 & 0.1395  \\ 
+  0.42 & 0.2869 & 0.2011 & 0.1952 & 0.1940 & 0.1827 & 0.1707 & 0.1807 & 0.1821 & 0.1407 & 0.1421  \\ 
+  0.43 & 0.2774 & 0.1988 & 0.1933 & 0.1879 & 0.1775 & 0.1678 & 0.1786 & 0.1789 & 0.1390 & 0.1409  \\ 
+  0.44 & 0.2635 & 0.1913 & 0.1874 & 0.1824 & 0.1729 & 0.1658 & 0.1756 & 0.1737 & 0.1371 & 0.1393  \\ 
+  0.45 & 0.2458 & 0.1789 & 0.1762 & 0.1736 & 0.1667 & 0.1611 & 0.1707 & 0.1692 & 0.1341 & 0.1374  \\ 
+  0.46 & 0.2283 & 0.1692 & 0.1655 & 0.1649 & 0.1580 & 0.1538 & 0.1621 & 0.1610 & 0.1297 & 0.1314  \\ 
+  0.47 & 0.2053 & 0.1531 & 0.1487 & 0.1505 & 0.1452 & 0.1415 & 0.1497 & 0.1498 & 0.1238 & 0.1249  \\ 
+  0.48 & 0.1724 & 0.1267 & 0.1242 & 0.1254 & 0.1220 & 0.1194 & 0.1252 & 0.1245 & 0.1047 & 0.1078  \\ 
+  0.49 & 0.1277 & 0.0909 & 0.0876 & 0.0870 & 0.0850 & 0.0841 & 0.0883 & 0.0886 & 0.0763 & 0.0790  \\ 
+  0.495 & 0.0993 & 0.0701 & 0.0662 & 0.0641 & 0.0619 & 0.0610 & 0.0633 & 0.0628 & 0.0542 & 0.0563  \\ 
+  0.496 & 0.0929 & 0.0657 & 0.0619 & 0.0597 & 0.0574 & 0.0566 & 0.0587 & 0.0580 & 0.0505 & 0.0522  \\ 
+  0.497 & 0.0860 & 0.0606 & 0.0566 & 0.0542 & 0.0520 & 0.0513 & 0.0531 & 0.0523 & 0.0456 & 0.0468  \\ 
+  0.498 & 0.0790 & 0.0557 & 0.0517 & 0.0492 & 0.0470 & 0.0463 & 0.0477 & 0.0467 & 0.0409 & 0.0420  \\ 
+  0.499 & 0.0716 & 0.0506 & 0.0468 & 0.0442 & 0.0420 & 0.0414 & 0.0424 & 0.0414 & 0.0361 & 0.0368  \\ 
+  0.5 & 0.0275 & 0.0178 & 0.0154 & 0.0141 & 0.0129 & 0.0121 & 0.0119 & 0.0112 & 0.0092 & 0.0090  \\ 
    \hline
 \end{tabular}
 \end{table}
@@ -304,33 +325,33 @@ For example, $region_1$ and $region_2$ have many missing values, and we might be
  \hline
  \multicolumn{10}{c}{\textbf{Keyword Range}}\\
   \hline
- \textbf{Prob} & 551-1001 & 601-1001 & 651-1001 & 701-1001 & \textbf{751-1001} & 801-1001 & 851-1001 & 901-1001 & 951-1001  \\
+ \textbf{Prob} & 501-1001 & 551-1001 & 601-1001 & 651-1001 & 701-1001 & \textbf{751-1001} & 801-1001 & 851-1001 & 901-1001  \\ 
   \hline
--0.5 &  &  &  &  &  &  &  &  &  \\
-  -0.4 & 0.0070 & 0.0080 & 0.0068 & 0.0071 & 0.0081 & 0.0078 & 0.0096 & 0.0070 &  \\
-  -0.3 & 0.0286 & 0.0339 & 0.0390 & 0.0409 & 0.0525 & 0.0078 & 0.0096 & 0.0070 &  \\
-  -0.2 & 0.0573 & 0.0687 & 0.0810 & 0.0841 & 0.1104 & 0.0078 & 0.0096 & 0.0070 &  \\
-  -0.1 & 0.0872 & 0.1042 & 0.1238 & 0.1276 & 0.1656 & 0.0078 & 0.0096 & 0.0070 &  \\
-  0 & 0.1081 & 0.1279 & 0.1519 & 0.1559 & 0.2012 & 0.0078 & 0.0096 & 0.0070 &  \\
-  0.1 & 0.1264 & 0.1481 & 0.1751 & 0.1792 & 0.2354 & 0.0119 & 0.0163 & 0.0181 &  \\
-  0.2 & 0.1372 & 0.1604 & 0.1877 & 0.1921 & 0.2484 & 0.0253 & 0.0330 & 0.0429 & 0.0118 \\
-  \textbf{0.3} & 0.1455 & 0.1668 & 0.1930 & 0.1976 & \textbf{0.2500} & 0.0406 & 0.0474 & 0.0516 & 0.0242 \\
-  0.4 & 0.1418 & 0.1619 & 0.1875 & 0.1914 & 0.2408 & 0.0497 & 0.0593 & 0.0681 & 0.0495 \\
-  0.41 & 0.1459 & 0.1666 & 0.1902 & 0.1914 & 0.2405 & 0.0548 & 0.0656 & 0.0774 & 0.0611 \\
-  0.42 & 0.1461 & 0.1668 & 0.1904 & 0.1917 & 0.2415 & 0.0605 & 0.0711 & 0.0866 & 0.0679 \\
-  0.43 & 0.1450 & 0.1656 & 0.1891 & 0.1909 & 0.2391 & 0.0636 & 0.0738 & 0.0876 & 0.0664 \\
-  0.44 & 0.1432 & 0.1635 & 0.1864 & 0.1897 & 0.2355 & 0.0677 & 0.0801 & 0.0957 & 0.0709 \\
-  0.45 & 0.1403 & 0.1597 & 0.1806 & 0.1842 & 0.2306 & 0.0676 & 0.0796 & 0.0958 & 0.0697 \\
-  0.46 & 0.1337 & 0.1524 & 0.1714 & 0.1755 & 0.2186 & 0.0673 & 0.0804 & 0.0958 & 0.0722 \\
-  0.47 & 0.1284 & 0.1457 & 0.1624 & 0.1680 & 0.2094 & 0.0746 & 0.0861 & 0.1016 & 0.0734 \\
-  0.48 & 0.1111 & 0.1257 & 0.1418 & 0.1468 & 0.1812 & 0.0702 & 0.0815 & 0.0953 & 0.0762 \\
-  0.49 & 0.0815 & 0.0911 & 0.1016 & 0.1076 & 0.1323 & 0.0576 & 0.0646 & 0.0776 & 0.0729 \\
-  0.495 & 0.0590 & 0.0660 & 0.0733 & 0.0781 & 0.0929 & 0.0447 & 0.0491 & 0.0614 & 0.0594 \\
-  0.496 & 0.0553 & 0.0604 & 0.0671 & 0.0717 & 0.0842 & 0.0426 & 0.0471 & 0.0570 & 0.0555 \\
-  0.497 & 0.0496 & 0.0538 & 0.0593 & 0.0630 & 0.0736 & 0.0377 & 0.0416 & 0.0504 & 0.0480 \\
-  0.498 & 0.0442 & 0.0478 & 0.0525 & 0.0560 & 0.0639 & 0.0336 & 0.0378 & 0.0444 & 0.0421 \\
-  0.499 & 0.0381 & 0.0407 & 0.0450 & 0.0480 & 0.0541 & 0.0290 & 0.0328 & 0.0377 & 0.0353 \\
-  0.5 & 0.0092 & 0.0100 & 0.0104 & 0.0107 & 0.0118 & 0.0066 & 0.0076 & 0.0080 & 0.0092 \\
+-0.5 &  &  &  &  &  &  &  &  &  \\ 
+  -0.4 & 0.0070 & 0.0070 & 0.0080 & 0.0068 & 0.0071 & 0.0081 & 0.0078 & 0.0096 & 0.0070  \\ 
+  -0.3 & 0.0279 &0.0286 & 0.0339 & 0.0390 & 0.0409 & 0.0525 & 0.0078 & 0.0096 & 0.0070  \\ 
+  -0.2 & 0.0560 &0.0573 & 0.0687 & 0.0810 & 0.0841 & 0.1104 & 0.0078 & 0.0096 & 0.0070  \\ 
+  -0.1 & 0.0856 &0.0872 & 0.1042 & 0.1238 & 0.1276 & 0.1656 & 0.0078 & 0.0096 & 0.0070  \\ 
+  0 & 0.1064 &0.1081 & 0.1279 & 0.1519 & 0.1559 & 0.2012 & 0.0078 & 0.0096 & 0.0070  \\ 
+  0.1 & 0.1246 &0.1264 & 0.1481 & 0.1751 & 0.1792 & 0.2354 & 0.0119 & 0.0163 & 0.0181 \\ 
+  0.2 & 0.1352 &0.1372 & 0.1604 & 0.1877 & 0.1921 & 0.2484 & 0.0253 & 0.0330 & 0.0429  \\ 
+  \textbf{0.3} & 0.1431 & 0.1455 & 0.1668 & 0.1930 & 0.1976 & \textbf{0.2500} & 0.0406 & 0.0474 & 0.0516 \\ 
+  0.4 & 0.1399 &0.1418 & 0.1619 & 0.1875 & 0.1914 & 0.2408 & 0.0497 & 0.0593 & 0.0681  \\ 
+  0.41 & 0.1435 &0.1459 & 0.1666 & 0.1902 & 0.1914 & 0.2405 & 0.0548 & 0.0656 & 0.0774  \\ 
+  0.42 & 0.1438 &0.1461 & 0.1668 & 0.1904 & 0.1917 & 0.2415 & 0.0605 & 0.0711 & 0.0866 \\ 
+  0.43 & 0.1425 &0.1450 & 0.1656 & 0.1891 & 0.1909 & 0.2391 & 0.0636 & 0.0738 & 0.0876 \\ 
+  0.44 & 0.1418 &0.1432 & 0.1635 & 0.1864 & 0.1897 & 0.2355 & 0.0677 & 0.0801 & 0.0957 \\ 
+  0.45 & 0.1401 &0.1403 & 0.1597 & 0.1806 & 0.1842 & 0.2306 & 0.0676 & 0.0796 & 0.0958 \\ 
+  0.46 & 0.1335 &0.1337 & 0.1524 & 0.1714 & 0.1755 & 0.2186 & 0.0673 & 0.0804 & 0.0958 \\ 
+  0.47 & 0.1260 &0.1284 & 0.1457 & 0.1624 & 0.1680 & 0.2094 & 0.0746 & 0.0861 & 0.1016 \\ 
+  0.48 & 0.1085 &0.1111 & 0.1257 & 0.1418 & 0.1468 & 0.1812 & 0.0702 & 0.0815 & 0.0953 \\ 
+  0.49 & 0.0785 &0.0815 & 0.0911 & 0.1016 & 0.1076 & 0.1323 & 0.0576 & 0.0646 & 0.0776 \\ 
+  0.495 & 0.0570 &0.0590 & 0.0660 & 0.0733 & 0.0781 & 0.0929 & 0.0447 & 0.0491 & 0.0614  \\ 
+  0.496 & 0.0534 &0.0553 & 0.0604 & 0.0671 & 0.0717 & 0.0842 & 0.0426 & 0.0471 & 0.0570  \\ 
+  0.497 & 0.0479 &0.0496 & 0.0538 & 0.0593 & 0.0630 & 0.0736 & 0.0377 & 0.0416 & 0.0504 \\ 
+  0.498 & 0.0430 &0.0442 & 0.0478 & 0.0525 & 0.0560 & 0.0639 & 0.0336 & 0.0378 & 0.0444 \\ 
+  0.499 & 0.0375 &.0381 & 0.0407 & 0.0450 & 0.0480 & 0.0541 & 0.0290 & 0.0328 & 0.0377 \\ 
+  0.5 & 0.0090 &0.0092 & 0.0100 & 0.0104 & 0.0107 & 0.0118 & 0.0066 & 0.0076 & 0.0080 \\ 
    \hline
 \end{tabular}
 \end{table}
@@ -346,33 +367,33 @@ For example, $region_1$ and $region_2$ have many missing values, and we might be
  \hline
  \multicolumn{8}{c}{\textbf{Keyword Range}}\\
   \hline
-  \textbf{Prob} & \textbf{1-11} & 1-21 & 1-31 & 1-41 & 1-51 & 1-61 & 1-71 \\
+  \textbf{Prob} & \textbf{1-11} & 1-21 & 1-31 & 1-41 & 1-51 & 1-61 & 1-71 \\ 
   \hline
--0.5 &  &  &  &  &  &  &  \\
-  -0.4 &  &  &  &  &  & 0.0020 & 0.0020 \\
-  -0.3 & 0.0070 & 0.0067 & 0.0067 & 0.0322 & 0.0314 & 0.0331 & 0.0305 \\
-  -0.2 & 0.1658 & 0.1379 & 0.1246 & 0.1772 & 0.1707 & 0.1684 & 0.1626 \\
-  -0.1 & 0.2799 & 0.2389 & 0.2110 & 0.2698 & 0.2605 & 0.2547 & 0.2477 \\
-  0 & 0.3640 & 0.3304 & 0.2937 & 0.3623 & 0.3521 & 0.3383 & 0.3243 \\
-  0.1 & 0.4751 & 0.4428 & 0.4096 & 0.4536 & 0.4426 & 0.4269 & 0.4112 \\
-  \textbf{0.2} & \textbf{0.5072} & 0.4858 & 0.4545 & 0.4911 & 0.4798 & 0.4714 & 0.4577 \\
-  0.3 & 0.4945 & 0.4810 & 0.4447 & 0.4847 & 0.4727 & 0.4692 & 0.4597 \\
-  0.4 & 0.4465 & 0.4185 & 0.3869 & 0.4162 & 0.4019 & 0.3970 & 0.3917 \\
-  0.41 & 0.4473 & 0.4142 & 0.3803 & 0.4061 & 0.3902 & 0.3833 & 0.3774 \\
-  0.42 & 0.4373 & 0.4069 & 0.3737 & 0.3966 & 0.3804 & 0.3732 & 0.3669 \\
-  0.43 & 0.4272 & 0.3925 & 0.3591 & 0.3830 & 0.3645 & 0.3561 & 0.3483 \\
-  0.44 & 0.4230 & 0.3829 & 0.3486 & 0.3722 & 0.3486 & 0.3403 & 0.3319 \\
-  0.45 & 0.4060 & 0.3652 & 0.3301 & 0.3532 & 0.3284 & 0.3183 & 0.3107 \\
-  0.46 & 0.3929 & 0.3409 & 0.3032 & 0.3281 & 0.3019 & 0.2917 & 0.2842 \\
-  0.47 & 0.3838 & 0.3238 & 0.2837 & 0.3070 & 0.2792 & 0.2682 & 0.2604 \\
-  0.48 & 0.3680 & 0.3090 & 0.2674 & 0.2869 & 0.2559 & 0.2418 & 0.2311 \\
-  0.49 & 0.3532 & 0.2927 & 0.2513 & 0.2672 & 0.2331 & 0.2169 & 0.2050 \\
-  0.495 & 0.3464 & 0.2799 & 0.2371 & 0.2494 & 0.2163 & 0.1998 & 0.1875 \\
-  0.496 & 0.3447 & 0.2761 & 0.2337 & 0.2446 & 0.2124 & 0.1961 & 0.1835 \\
-  0.497 & 0.3439 & 0.2730 & 0.2302 & 0.2399 & 0.2084 & 0.1919 & 0.1790 \\
-  0.498 & 0.3413 & 0.2679 & 0.2255 & 0.2329 & 0.2029 & 0.1872 & 0.1741 \\
-  0.499 & 0.3397 & 0.2632 & 0.2192 & 0.2255 & 0.1963 & 0.1813 & 0.1678 \\
-  0.5 & 0.3279 & 0.2479 & 0.2032 & 0.2015 & 0.1742 & 0.1575 & 0.1447 \\
+-0.5 &  &  &  &  &  &  &  \\ 
+  -0.4 &  &  &  &  &  & 0.0020 & 0.0020 \\ 
+  -0.3 & 0.0070 & 0.0067 & 0.0067 & 0.0322 & 0.0314 & 0.0331 & 0.0305 \\ 
+  -0.2 & 0.1658 & 0.1379 & 0.1246 & 0.1772 & 0.1707 & 0.1684 & 0.1626 \\ 
+  -0.1 & 0.2799 & 0.2389 & 0.2110 & 0.2698 & 0.2605 & 0.2547 & 0.2477 \\ 
+  0 & 0.3640 & 0.3304 & 0.2937 & 0.3623 & 0.3521 & 0.3383 & 0.3243 \\ 
+  0.1 & 0.4751 & 0.4428 & 0.4096 & 0.4536 & 0.4426 & 0.4269 & 0.4112 \\ 
+  \textbf{0.2} & \textbf{0.5072} & 0.4858 & 0.4545 & 0.4911 & 0.4798 & 0.4714 & 0.4577 \\ 
+  0.3 & 0.4945 & 0.4810 & 0.4447 & 0.4847 & 0.4727 & 0.4692 & 0.4597 \\ 
+  0.4 & 0.4465 & 0.4185 & 0.3869 & 0.4162 & 0.4019 & 0.3970 & 0.3917 \\ 
+  0.41 & 0.4473 & 0.4142 & 0.3803 & 0.4061 & 0.3902 & 0.3833 & 0.3774 \\ 
+  0.42 & 0.4373 & 0.4069 & 0.3737 & 0.3966 & 0.3804 & 0.3732 & 0.3669 \\ 
+  0.43 & 0.4272 & 0.3925 & 0.3591 & 0.3830 & 0.3645 & 0.3561 & 0.3483 \\ 
+  0.44 & 0.4230 & 0.3829 & 0.3486 & 0.3722 & 0.3486 & 0.3403 & 0.3319 \\ 
+  0.45 & 0.4060 & 0.3652 & 0.3301 & 0.3532 & 0.3284 & 0.3183 & 0.3107 \\ 
+  0.46 & 0.3929 & 0.3409 & 0.3032 & 0.3281 & 0.3019 & 0.2917 & 0.2842 \\ 
+  0.47 & 0.3838 & 0.3238 & 0.2837 & 0.3070 & 0.2792 & 0.2682 & 0.2604 \\ 
+  0.48 & 0.3680 & 0.3090 & 0.2674 & 0.2869 & 0.2559 & 0.2418 & 0.2311 \\ 
+  0.49 & 0.3532 & 0.2927 & 0.2513 & 0.2672 & 0.2331 & 0.2169 & 0.2050 \\ 
+  0.495 & 0.3464 & 0.2799 & 0.2371 & 0.2494 & 0.2163 & 0.1998 & 0.1875 \\ 
+  0.496 & 0.3447 & 0.2761 & 0.2337 & 0.2446 & 0.2124 & 0.1961 & 0.1835 \\ 
+  0.497 & 0.3439 & 0.2730 & 0.2302 & 0.2399 & 0.2084 & 0.1919 & 0.1790 \\ 
+  0.498 & 0.3413 & 0.2679 & 0.2255 & 0.2329 & 0.2029 & 0.1872 & 0.1741 \\ 
+  0.499 & 0.3397 & 0.2632 & 0.2192 & 0.2255 & 0.1963 & 0.1813 & 0.1678 \\ 
+  0.5 & 0.3279 & 0.2479 & 0.2032 & 0.2015 & 0.1742 & 0.1575 & 0.1447 \\ 
    \hline
 \end{tabular}
 \end{table}
@@ -385,33 +406,33 @@ For example, $region_1$ and $region_2$ have many missing values, and we might be
  \hline
  \multicolumn{9}{c}{\textbf{Keyword Range}}\\
   \hline
-  \textbf{Prob} & \textbf{1-81} & 1-91 & 1-101 & 1-151 & 1-201 & 1-251 & 1-301 & 1-351 \\
+  \textbf{Prob} & \textbf{1-81} & 1-91 & 1-101 & 1-151 & 1-201 & 1-251 & 1-301 & 1-351 \\ 
   \hline
--0.5 &  &  &  &  &  &  &  &  \\
-  -0.4 & 0.0020 & 0.0020 & 0.0020 & 0.0020 & 0.0018 & 0.0017 & 0.0043 & 0.0063 \\
-  -0.3 & 0.0302 & 0.0300 & 0.0293 & 0.0268 & 0.0250 & 0.0218 & 0.0216 & 0.0226 \\
-  -0.2 & 0.1600 & 0.1546 & 0.1500 & 0.1386 & 0.1281 & 0.1201 & 0.1085 & 0.1045 \\
-  -0.1 & 0.2409 & 0.2322 & 0.2259 & 0.2107 & 0.1944 & 0.1873 & 0.1755 & 0.1699 \\
-  0 & 0.3142 & 0.3012 & 0.2946 & 0.2701 & 0.2546 & 0.2473 & 0.2286 & 0.2235 \\
-  0.1 & 0.4000 & 0.3829 & 0.3743 & 0.3442 & 0.3259 & 0.3162 & 0.2940 & 0.2877 \\
-  0.2 & 0.4467 & 0.4307 & 0.4228 & 0.3953 & 0.3783 & 0.3677 & 0.3436 & 0.3343 \\
-  \textbf{0.3} & \textbf{0.4547} & 0.4460 & 0.4382 & 0.4167 & 0.4005 & 0.3931 & 0.3702 & 0.3614 \\
-  0.4 & 0.3872 & 0.3815 & 0.3731 & 0.3606 & 0.3539 & 0.3506 & 0.3361 & 0.3317 \\
-  0.41 & 0.3720 & 0.3653 & 0.3559 & 0.3433 & 0.3392 & 0.3359 & 0.3229 & 0.3186 \\
-  0.42 & 0.3598 & 0.3517 & 0.3422 & 0.3299 & 0.3251 & 0.3226 & 0.3108 & 0.3072 \\
-  0.43 & 0.3405 & 0.3322 & 0.3229 & 0.3104 & 0.3060 & 0.3034 & 0.2943 & 0.2904 \\
-  0.44 & 0.3229 & 0.3140 & 0.3051 & 0.2915 & 0.2857 & 0.2817 & 0.2732 & 0.2692 \\
-  0.45 & 0.3001 & 0.2918 & 0.2824 & 0.2664 & 0.2605 & 0.2572 & 0.2489 & 0.2444 \\
-  0.46 & 0.2729 & 0.2642 & 0.2563 & 0.2388 & 0.2320 & 0.2287 & 0.2219 & 0.2179 \\
-  0.47 & 0.2480 & 0.2388 & 0.2328 & 0.2146 & 0.2066 & 0.2021 & 0.1959 & 0.1923 \\
-  0.48 & 0.2166 & 0.2074 & 0.2008 & 0.1823 & 0.1738 & 0.1687 & 0.1631 & 0.1592 \\
-  0.49 & 0.1887 & 0.1791 & 0.1707 & 0.1496 & 0.1399 & 0.1330 & 0.1265 & 0.1217 \\
-  0.495 & 0.1711 & 0.1613 & 0.1526 & 0.1307 & 0.1199 & 0.1110 & 0.1041 & 0.0986 \\
-  0.496 & 0.1671 & 0.1571 & 0.1481 & 0.1258 & 0.1152 & 0.1058 & 0.0989 & 0.0931 \\
-  0.497 & 0.1628 & 0.1529 & 0.1439 & 0.1212 & 0.1104 & 0.1003 & 0.0932 & 0.0872 \\
-  0.498 & 0.1580 & 0.1481 & 0.1393 & 0.1159 & 0.1048 & 0.0944 & 0.0873 & 0.0812 \\
-  0.499 & 0.1522 & 0.1426 & 0.1338 & 0.1101 & 0.0986 & 0.0877 & 0.0803 & 0.0742 \\
-  0.5 & 0.1320 & 0.1236 & 0.1160 & 0.0907 & 0.0769 & 0.0664 & 0.0578 & 0.0518 \\
+-0.5 &  &  &  &  &  &  &  &  \\ 
+  -0.4 & 0.0020 & 0.0020 & 0.0020 & 0.0020 & 0.0018 & 0.0017 & 0.0043 & 0.0063 \\ 
+  -0.3 & 0.0302 & 0.0300 & 0.0293 & 0.0268 & 0.0250 & 0.0218 & 0.0216 & 0.0226 \\ 
+  -0.2 & 0.1600 & 0.1546 & 0.1500 & 0.1386 & 0.1281 & 0.1201 & 0.1085 & 0.1045 \\ 
+  -0.1 & 0.2409 & 0.2322 & 0.2259 & 0.2107 & 0.1944 & 0.1873 & 0.1755 & 0.1699 \\ 
+  0 & 0.3142 & 0.3012 & 0.2946 & 0.2701 & 0.2546 & 0.2473 & 0.2286 & 0.2235 \\ 
+  0.1 & 0.4000 & 0.3829 & 0.3743 & 0.3442 & 0.3259 & 0.3162 & 0.2940 & 0.2877 \\ 
+  0.2 & 0.4467 & 0.4307 & 0.4228 & 0.3953 & 0.3783 & 0.3677 & 0.3436 & 0.3343 \\ 
+  \textbf{0.3} & \textbf{0.4547} & 0.4460 & 0.4382 & 0.4167 & 0.4005 & 0.3931 & 0.3702 & 0.3614 \\ 
+  0.4 & 0.3872 & 0.3815 & 0.3731 & 0.3606 & 0.3539 & 0.3506 & 0.3361 & 0.3317 \\ 
+  0.41 & 0.3720 & 0.3653 & 0.3559 & 0.3433 & 0.3392 & 0.3359 & 0.3229 & 0.3186 \\ 
+  0.42 & 0.3598 & 0.3517 & 0.3422 & 0.3299 & 0.3251 & 0.3226 & 0.3108 & 0.3072 \\ 
+  0.43 & 0.3405 & 0.3322 & 0.3229 & 0.3104 & 0.3060 & 0.3034 & 0.2943 & 0.2904 \\ 
+  0.44 & 0.3229 & 0.3140 & 0.3051 & 0.2915 & 0.2857 & 0.2817 & 0.2732 & 0.2692 \\ 
+  0.45 & 0.3001 & 0.2918 & 0.2824 & 0.2664 & 0.2605 & 0.2572 & 0.2489 & 0.2444 \\ 
+  0.46 & 0.2729 & 0.2642 & 0.2563 & 0.2388 & 0.2320 & 0.2287 & 0.2219 & 0.2179 \\ 
+  0.47 & 0.2480 & 0.2388 & 0.2328 & 0.2146 & 0.2066 & 0.2021 & 0.1959 & 0.1923 \\ 
+  0.48 & 0.2166 & 0.2074 & 0.2008 & 0.1823 & 0.1738 & 0.1687 & 0.1631 & 0.1592 \\ 
+  0.49 & 0.1887 & 0.1791 & 0.1707 & 0.1496 & 0.1399 & 0.1330 & 0.1265 & 0.1217 \\ 
+  0.495 & 0.1711 & 0.1613 & 0.1526 & 0.1307 & 0.1199 & 0.1110 & 0.1041 & 0.0986 \\ 
+  0.496 & 0.1671 & 0.1571 & 0.1481 & 0.1258 & 0.1152 & 0.1058 & 0.0989 & 0.0931 \\ 
+  0.497 & 0.1628 & 0.1529 & 0.1439 & 0.1212 & 0.1104 & 0.1003 & 0.0932 & 0.0872 \\ 
+  0.498 & 0.1580 & 0.1481 & 0.1393 & 0.1159 & 0.1048 & 0.0944 & 0.0873 & 0.0812 \\ 
+  0.499 & 0.1522 & 0.1426 & 0.1338 & 0.1101 & 0.0986 & 0.0877 & 0.0803 & 0.0742 \\ 
+  0.5 & 0.1320 & 0.1236 & 0.1160 & 0.0907 & 0.0769 & 0.0664 & 0.0578 & 0.0518 \\ 
    \hline
 \end{tabular}
 \end{table}

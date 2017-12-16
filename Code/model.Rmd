@@ -11,6 +11,7 @@ rm(list = ls())
 
 library(data.table)
 library(caTools)
+library(zoo)
 
 ## Read in the big data set however necessary. 
 #data = data.table(read.csv("~/Downloads/dataset.csv"), sep = ',', header = FALSE, fill = TRUE)
@@ -181,15 +182,27 @@ xtable(Fscoredata[,8:15], digits=4)
 ############################################################################################################
 
 #save(Fscoredata, FPRdata, Recalldata, file="~/Google Drive/Stanford/Stanford Y2 Q1/CS 221/CS221FinalProject/Predictions/Fscores2.RData")
+load(file="~/Google Drive/Stanford/Stanford Y2 Q1/CS 221/CS221FinalProject/Predictions/Fscores2.RData")
 
 plotme <- data.frame(x=FPRdata[,"start 1 end 101"], y=Recalldata[,"1-101"], col=c(rep("black", 8), "red", rep("black", nrow(Fscoredata)-8-1)))
 row.names(plotme) <- row.names(Fscoredata)
+
+
+
+
+
 
 ggplot(data=plotme) + geom_point(aes(x=x, y=y, col=col), size=3)+ geom_line(aes(x=x, y=y)) + 
   labs(title = "ROC Curve for Keyword Range 1-100", x = "False Positive Rate", y = "Recall", color = "Probability Cutoffs") + #,
        #caption="The Optimal probability cutoff calculated in this plot is 0.3.") +
  scale_color_manual(labels = c("Other probability", "Optimal probability"), values = c("lightblue", "red")) +
   theme_bw()
+
+# AREA UNDER THE CURVE: 0.7003093
+xt <- diff(plotme$x[plotme$x<1])
+yt <- rollmean(plotme$y[plotme$x<1],2)
+# This gives you the area
+sum(xt*yt)
 ```
 
 
